@@ -4,6 +4,7 @@ namespace App\domain;
 
 
 use App\Acl\Ceve;
+use App\Acl\Esi;
 use App\Models\Type;
 use App\Models\TypePrice;
 
@@ -15,8 +16,14 @@ class GetPrice
             ->where('price_need', Type::PRICE_NEED_YES)
             ->get()->toArray();
 
+        // 获取ESI价格列表
+        $marketPrices = Esi::marketPrices();
+        $marketPricesMap = array_column($marketPrices, 'average_price', 'type_id');
+
         foreach ($types as $type) {
-            self::updateJitaPrice($type['type_id']);
+            if (!empty($marketPricesMap[$type['type_id']])) {
+                self::updateJitaPrice($type['type_id']);
+            }
         }
 
     }
