@@ -22,6 +22,7 @@ class ImportType
                 'name_zh' => $type['name']['zh'] ?? '',
                 'name_en' => $type['name']['en'],
                 'volume' => $type['volume'] ?? 0,
+                'published' => $type['published'] ? 1 : 0,
             ];
             Type::query()->updateOrCreate($attributes, $values);
         }

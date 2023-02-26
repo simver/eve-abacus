@@ -24,7 +24,7 @@ class ManufacturingList
         // 查询蓝图
         $blueprints = Blueprint::query()
             ->where('for_sale', Blueprint::FOR_SALE_YES)
-            ->where('average_price', '<', 50000000)
+//            ->where('average_price', '<', 50000000)
             ->get()->toArray();
         foreach ($blueprints as $blueprint) {
             $rankItem = [];
@@ -41,6 +41,7 @@ class ManufacturingList
             // 查询蓝图产品信息
             $productType = Type::query()
                 ->where('type_id', $blueprint['product_type_id'])
+                ->where('published', 1)
                 ->first();
             if (is_null($productType)) continue;
             $rankItem['product_name_zh'] = $productType->name_zh;
@@ -117,13 +118,21 @@ class ManufacturingList
             if (empty($rankItem['materials'])) continue;
             // 计算材料成本总和
             $rankItem['materials_cost'] = array_sum(array_column($rankItem['materials'], 'material_cost'));
+
+//            $rankItem['materials_cost'] = $rankItem['materials_cost'] * 0.95;
+//            $rankItem['manufacturing_time'] = $rankItem['manufacturing_time'] * 0.9;
+
             // HACK 过滤生产成本
 //            if ($rankItem['materials_cost'] > 1000000) continue;
             // 计算生产利润
             $rankItem['profit_to_sell'] = bcsub($rankItem['product_sell_total_tax'], $rankItem['materials_cost'], 2);
             $rankItem['profit_for_buyer'] = bcsub($rankItem['product_buy_total_tax'], $rankItem['materials_cost'], 2);
+            if ($rankItem['profit_for_buyer'] <= 0) {
+                continue;
+            }
             // 计算时效利润
             $rankItem['profit_for_buyer_sec'] = bcdiv($rankItem['profit_for_buyer'], $rankItem['manufacturing_time'], 2);
+            $rankItem['profit_to_sell_sec'] = bcdiv($rankItem['profit_to_sell'], $rankItem['manufacturing_time'], 2);
             // 产出-投入比率 RIO（output-input ratio）
             $rankItem['RIO'] = bcdiv($rankItem['product_buy_total_tax'], $rankItem['materials_cost'], 2);
             // 日产量

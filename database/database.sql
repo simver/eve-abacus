@@ -7,6 +7,7 @@ CREATE TABLE `type` (
     `name_zh` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '中文名称',
     `name_en` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '英文名称',
     `volume` float unsigned NOT NULL DEFAULT '0.00' COMMENT '体积',
+    `published` int NOT NULL DEFAULT '0' COMMENT '是否发布',
     `price_need` int NOT NULL DEFAULT '0' COMMENT '是否需要查询价格',
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
@@ -16,8 +17,6 @@ CREATE TABLE `type` (
     KEY `idx_name_zh` (`name_zh`),
     KEY `idx_name_en` (`name_en`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='物品表';
-
-alter table type drop column `is_material`;
 
 
 DROP TABLE IF EXISTS `blueprint`;

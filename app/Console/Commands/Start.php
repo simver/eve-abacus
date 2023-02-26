@@ -75,11 +75,12 @@ class Start extends Command
     {
         $new = new ManufacturingList();
         $manufacturingList = $new->getProfitRank();
-        $manufacturingList = array_slice($manufacturingList, 0, 48);
-        $manufacturingList = array_map(function ($item) {
-            return Arr::only($item, ['blueprint_type_id', 'manufacturing_time', 'product_type_id', 'blueprint_name_zh', 'product_name_zh', 'product_buy_max', 'materials_cost', 'profit_for_buyer', 'profit_for_buyer_sec', 'RIO', 'PPD']);
+//        $manufacturingList = array_slice($manufacturingList, 0, 100);
+        $headers = ['blueprint_type_id' => "蓝图ID", 'manufacturing_time' => '产时', 'product_type_id' => '产品ID', 'blueprint_name_zh' => '蓝图', 'product_name_zh' => '产品', 'product_buy_max' => '买价', 'materials_cost' => '成本', 'profit_for_buyer' => '利润', 'profit_for_buyer_sec' => '秒利润', 'RIO' => 'RIO', 'PPD' => 'PPD'];
+        $manufacturingList = array_map(function ($item) use ($headers) {
+            return Arr::only($item, array_keys($headers));
         }, $manufacturingList);
-        array_multisort(array_column($manufacturingList, 'PPD'), SORT_DESC, SORT_NUMERIC, $manufacturingList);
-        $this->table(array_keys(current($manufacturingList)), $manufacturingList);
+//        array_multisort(array_column($manufacturingList, 'PPD'), SORT_DESC, SORT_NUMERIC, $manufacturingList);
+        $this->table(array_values($headers), $manufacturingList);
     }
 }

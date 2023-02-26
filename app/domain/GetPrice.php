@@ -17,13 +17,13 @@ class GetPrice
             ->get()->toArray();
 
         // 获取ESI价格列表
-        $marketPrices = Esi::marketPrices();
-        $marketPricesMap = array_column($marketPrices, 'average_price', 'type_id');
+//        $marketPrices = Esi::marketPrices();
+//        $marketPricesMap = array_column($marketPrices, 'average_price', 'type_id');
 
         foreach ($types as $type) {
-            if (!empty($marketPricesMap[$type['type_id']])) {
+//            if (!empty($marketPricesMap[$type['type_id']])) {
                 self::updateJitaPrice($type['type_id']);
-            }
+//            }
         }
 
     }
