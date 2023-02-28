@@ -119,8 +119,8 @@ class ManufacturingList
             // 计算材料成本总和
             $rankItem['materials_cost'] = array_sum(array_column($rankItem['materials'], 'material_cost'));
 
-//            $rankItem['materials_cost'] = $rankItem['materials_cost'] * 0.95;
-//            $rankItem['manufacturing_time'] = $rankItem['manufacturing_time'] * 0.9;
+//            $rankItem['materials_cost'] = $rankItem['materials_cost'] * 0.9;
+//            $rankItem['manufacturing_time'] = $rankItem['manufacturing_time'] * 0.8;
 
             // HACK 过滤生产成本
 //            if ($rankItem['materials_cost'] > 1000000) continue;

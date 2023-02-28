@@ -3,6 +3,7 @@
 
 namespace App\Console\Commands;
 
+use App\domain\Contract;
 use App\domain\GetPrice;
 use App\domain\ImportBlueprint;
 use App\domain\ImportType;
@@ -29,8 +30,9 @@ class Start extends Command
         set_time_limit(0);
         ini_set('memory_limit', '1024M');
 
-
-        $choices = [[1, '导入 TypeId 数据'], [2, '导入蓝图数据'], [3, '更新价格数据'], [4, '计算生产盈利排行'], [0, '退出']];
+        $choices = [[1, '导入 TypeId 数据'], [2, '导入蓝图数据'], [3, '更新价格数据'], [4, '计算生产盈利排行'],
+            [5, '更新合同数据'],
+            [0, '退出']];
         $this->table(['选择', '功能'], $choices);
         while ($choice = $this->choice("请选择", array_column($choices, 0))) {
             switch ($choice) {
@@ -48,6 +50,9 @@ class Start extends Command
                     break;
                 case 4:
                     $this->manufacturingList();
+                    break;
+                case 5:
+                    $this->updateContracts();
                     break;
                 default:
                     break;
@@ -82,5 +87,9 @@ class Start extends Command
         }, $manufacturingList);
 //        array_multisort(array_column($manufacturingList, 'PPD'), SORT_DESC, SORT_NUMERIC, $manufacturingList);
         $this->table(array_values($headers), $manufacturingList);
+    }
+
+    public function updateContracts() {
+        Contract::updateContracts();
     }
 }

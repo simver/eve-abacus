@@ -6,13 +6,12 @@
 
 namespace App\Acl;
 
+use App\Common\Universe;
 use App\Util\Curl;
 
 class Ceve
 {
-    const URL   = "https://www.ceve-market.org/tqapi/";
-    const JITA  = 30000142;
-    const FORGE = 10000002;
+    const URL = "https://www.ceve-market.org/tqapi/";
 
     /**
      * 描述: 查询指定物品的价格资料.
@@ -65,10 +64,10 @@ class Ceve
     public static function getJitaPrice(int $typeId): array
     {
         $location = [
-            'regionId' => self::FORGE,
-            'systemId' => self::JITA,
+            'regionId' => Universe::FORGE,
+            'systemId' => Universe::JITA,
         ];
-        $prices = self::getPriceByTypeId($typeId, self::FORGE, self::JITA);
+        $prices = self::getPriceByTypeId($typeId, $location['regionId'], $location['systemId']);
         return array_merge($location, $prices);
     }
 }

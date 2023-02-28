@@ -74,3 +74,18 @@ CREATE TABLE `type_price` (
     KEY `idx_sell_min` (`sell_min`),
     KEY `idx_sell_quantity` (`sell_quantity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='物品价格表';
+
+DROP TABLE IF EXISTS `contract_item_cache`;
+CREATE TABLE `contract_item_cache` (
+    `id` int unsigned NOT NULL AUTO_INCREMENT,
+    `type_id` int NOT NULL DEFAULT '0' COMMENT '物品ID',
+    `price` float unsigned NOT NULL DEFAULT '0.00' COMMENT '出价',
+    `is_blueprint_copy` int NOT NULL DEFAULT '0' COMMENT '是否拷贝',
+    `time_efficiency` int NOT NULL DEFAULT '0' COMMENT '时间效率',
+    `material_efficiency` int NOT NULL DEFAULT '0' COMMENT '材料效率',
+    `runs` int NOT NULL DEFAULT '0' COMMENT '轮数',
+    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uni_type_id` (`type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='合同条目缓存表';
