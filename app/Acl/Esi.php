@@ -21,13 +21,14 @@ class Esi
     // 获取区域合同
     public static function getContracts(int $regionId): \Generator
     {
-        $page = 1;
+        $page = 30;
         while (true) {
+            if ($page <= 0) break;
             $url = self::URL . "contracts/public/{$regionId}/?datasource=tranquility&page={$page}";
             if (empty($result = Curl::httpGetRequest($url)))
-                if (empty($result = Curl::httpGetRequest($url))) break;
+                $result = Curl::httpGetRequest($url);
             echo ">P{$page}";
-            $page++;
+            $page--;
             yield $result;
         }
     }
@@ -37,8 +38,7 @@ class Esi
     {
         $url = self::URL . "contracts/public/items/{$contractId}/?datasource=tranquility&page=1";
         $result = Curl::httpGetRequest($url);
-        if (empty($result)) echo PHP_EOL . "[Error] Items is null. URL:" . $url . PHP_EOL;
-        // retry
-        return Curl::httpGetRequest($url);
+        if (empty($result)) $result = Curl::httpGetRequest($url);
+        return $result;
     }
 }

@@ -4,34 +4,66 @@ namespace App\domain;
 
 use App\Models\Blueprint;
 use App\Models\BlueprintMaterial;
+use App\Models\ContractItemCache;
+use App\Models\ContractItemCacheBak;
 use App\Models\Type;
 use App\Models\TypePrice;
+use Illuminate\Support\Facades\DB;
 
 class ManufacturingList
 {
     // 中介费
-    public float $brokerFee = 0.0298;
+    public $brokerFee = 0.0298;
     // 销售税
-    public float $salesTax = 0.08;
+    public $salesTax = 0.08;
     // 物品信息缓存
-    public array $typesCache = [];
+    public $typesCache = [];
 
-    public function getProfitRank(): array
+    public function getProfitRank(string $type): array
+    {
+        if ('market' == $type) return $this->getProfitRankMarket();
+        if ('contract' == $type) return $this->getProfitRankContract();
+        return [];
+    }
+
+    public function getProfitRankMarket(): array
+    {
+        // 查询市场售卖蓝图
+        $blueprints = Blueprint::query()
+            ->where('for_sale', Blueprint::FOR_SALE_YES)
+            ->get()->toArray();
+        $rank = $this->getRank($blueprints);
+        array_multisort(array_column($rank, 'profit_for_buyer_sec'), SORT_DESC, SORT_NUMERIC, $rank);
+        return $rank;
+    }
+
+    public function getProfitRankContract(): array
+    {
+        // 查询合同蓝图
+        $blueprintInContract = DB::table('blueprint as b')
+            ->join('contract_item_cache_bak as cb', 'b.type_id', '=', 'cb.type_id')
+            ->where('b.for_sale', Blueprint::FOR_SALE_NO)
+            ->select(['b.*', 'cb.price as contract_price', 'cb.runs as runs'])->get()->toArray();
+        $rank = $this->getRank($blueprintInContract);
+        array_multisort(array_column($rank, 'profit_for_buyer_sec'), SORT_DESC, SORT_NUMERIC, $rank);
+        return $rank;
+    }
+
+    public function getRank(array $blueprints): array
     {
         $rank = [];
         $salesOrderDiscount = 1 - ($this->salesTax + $this->brokerFee);
         $salesImmediateDiscount = 1 - $this->salesTax;
-        // 查询蓝图
-        $blueprints = Blueprint::query()
-            ->where('for_sale', Blueprint::FOR_SALE_YES)
-//            ->where('average_price', '<', 50000000)
-            ->get()->toArray();
         foreach ($blueprints as $blueprint) {
+            if (is_object($blueprint)) $blueprint = get_object_vars($blueprint);
             $rankItem = [];
             $rankItem['blueprint_type_id'] = $blueprint['type_id'];
             $rankItem['manufacturing_time'] = $blueprint['manufacturing_time'];
             $rankItem['product_type_id'] = $blueprint['product_type_id'];
             $rankItem['product_quantity'] = $blueprint['product_quantity'];
+            if (!empty($blueprint['runs'])) {
+                $rankItem['product_quantity'] = $blueprint['runs'] * $blueprint['product_quantity'];
+            }
             // 查询蓝图信息
             $blueprintsType = Type::query()
                 ->where('type_id', $blueprint['type_id'])
@@ -118,7 +150,11 @@ class ManufacturingList
             if (empty($rankItem['materials'])) continue;
             // 计算材料成本总和
             $rankItem['materials_cost'] = array_sum(array_column($rankItem['materials'], 'material_cost'));
-
+            // copy蓝图添加图的成本
+            if (!empty($blueprint['contract_price'])) {
+                $rankItem['materials_cost'] += $blueprint['contract_price'];
+            }
+            // HACK 考虑蓝图效率
 //            $rankItem['materials_cost'] = $rankItem['materials_cost'] * 0.9;
 //            $rankItem['manufacturing_time'] = $rankItem['manufacturing_time'] * 0.8;
 
@@ -140,10 +176,8 @@ class ManufacturingList
             // 每日收益
             $rankItem['PPD'] = bcmul($rankItem['profit_for_buyer'], $dailyOutput, 2);
 
-//            unset($rankItem['materials']);
             $rank[] = $rankItem;
         }
-        array_multisort(array_column($rank, 'profit_for_buyer_sec'), SORT_DESC, SORT_NUMERIC, $rank);
         return $rank;
     }
 }

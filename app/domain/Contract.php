@@ -10,6 +10,7 @@ use App\Acl\Esi;
 use App\Common\Universe;
 use App\Models\Blueprint;
 use App\Models\ContractItemCache;
+use Illuminate\Support\Arr;
 
 class Contract
 {
@@ -54,8 +55,19 @@ class Contract
             ];
             // 缓存检查
             if (empty($contractItemCacheLocal[$contractItem['type_id']])) {
-                ContractItemCache::query()->create($model);
-                $contractItemCacheLocal[$contractItem['type_id']] = $model;
+                $cacheModel = ContractItemCache::query()->where('type_id', $contractItem['type_id'])
+                    ->first();
+                if (empty($cacheModel)) {
+                    ContractItemCache::query()->create($model);
+                } else {
+                    if ($cacheModel->price > $contract['price']) {
+                        ContractItemCache::query()->where('type_id', $contractItem['type_id'])
+                            ->update($model);
+                        $contractItemCacheLocal[$contractItem['type_id']] = $model;
+                    } else {
+                        $contractItemCacheLocal[$contractItem['type_id']] = Arr::only($cacheModel->toArray(), array_keys($model));
+                    }
+                }
             } else {
                 $cache = $contractItemCacheLocal[$contractItem['type_id']];
                 if ($cache['price'] > $contract['price']) {
