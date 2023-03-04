@@ -28,6 +28,10 @@ class Esi
             if (empty($result = Curl::httpGetRequest($url)))
                 $result = Curl::httpGetRequest($url);
             echo ">P{$page}";
+            if (!is_array($result)) {
+                echo $result . PHP_EOL;
+                continue;
+            }
             $page--;
             yield $result;
         }

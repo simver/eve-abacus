@@ -41,16 +41,12 @@ class Contract
             $contractItem = current($contractItems);
             if (empty($contractItem['type_id'])) continue;
             if (!in_array($contractItem['type_id'], $blueprintIds)) continue;
-            if (!isset($contractItem['time_efficiency'])) {
-                dump($contractItem);
-                continue;
-            };
             $model = [
                 'type_id' => $contractItem['type_id'],
                 'price' => $contract['price'],
                 'is_blueprint_copy' => $contractItem['is_blueprint_copy'] ?? 0,
-                'time_efficiency' => $contractItem['time_efficiency'],
-                'material_efficiency' => $contractItem['material_efficiency'],
+                'time_efficiency' => $contractItem['time_efficiency'] ?? 0,
+                'material_efficiency' => $contractItem['material_efficiency'] ?? 0,
                 'runs' => $contractItem['runs'] ?? 0,
             ];
             // 缓存检查

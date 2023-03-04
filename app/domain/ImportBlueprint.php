@@ -54,10 +54,16 @@ class ImportBlueprint
         $marketPrices = Esi::marketPrices();
         $marketPricesMap = array_column($marketPrices, 'average_price', 'type_id');
         // 重置数据库标记字段
-        Blueprint::query()->update(['for_sale' => Blueprint::FOR_SALE_NO]);
+        Blueprint::query()->truncate();
+        BlueprintMaterial::query()->truncate();
         Type::query()->update(['price_need' => Type::PRICE_NEED_NO]);
+        $inventionTypeIds = [];
         // 读取文件更新
         foreach (yaml_parse_file($filepath) as $blueprint) {
+            // 过滤已不发布蓝图
+            $typeModel = Type::query()->where('type_id', $blueprint['blueprintTypeID'])
+                ->first();
+            if (is_null($typeModel) || $typeModel->published == 0) continue;
             // 蓝图基础信息准备
             if (!isset($blueprint['activities'])) continue;
             if (!isset($blueprint['activities']['manufacturing'])) continue;
@@ -70,11 +76,18 @@ class ImportBlueprint
                 'product_type_id' => $blueprint['activities']['manufacturing']['products'][0]['typeID'],
                 'product_quantity' => $blueprint['activities']['manufacturing']['products'][0]['quantity'],
             ];
-            if (empty($marketPricesMap[$blueprint['blueprintTypeID']])) {
-                $valuesB['for_sale'] = Blueprint::FOR_SALE_NO;
-            } else {
+            // 标记出售蓝图
+            if (!empty($marketPricesMap[$blueprint['blueprintTypeID']])) {
                 $valuesB['for_sale'] = Blueprint::FOR_SALE_YES;
                 $valuesB['average_price'] = $marketPricesMap[$blueprint['blueprintTypeID']];
+            }
+            if (!empty($blueprint['activities']['invention'])
+                && !empty($blueprint['activities']['invention']['materials'])) {
+                $valuesB['invention_type_id'] = $blueprint['activities']['invention']['products'][0]['typeID'];
+                $valuesB['invention_probability'] = $blueprint['activities']['invention']['products'][0]['probability'];
+                $valuesB['invention_quantity'] = $blueprint['activities']['invention']['products'][0]['quantity'];
+                // 记录研发图ID
+                $inventionTypeIds[] = $valuesB['invention_type_id'];
             }
             // 蓝图基础信息录入
             Blueprint::query()->updateOrCreate($attributesB, $valuesB);
@@ -82,33 +95,36 @@ class ImportBlueprint
             Type::setPriceNeed($valuesB['product_type_id']);
             // 蓝图材料信息准备
             if (!isset($blueprint['activities']['manufacturing']['materials'])) continue;
-
-            // 查询已入库的蓝图材料信息
-            $oldMaterials = BlueprintMaterial::query()
-                ->where('blueprint_type_id', $blueprint['blueprintTypeID'])
-                ->get()->toArray();
-            $oldMaterialsMap = array_column($oldMaterials, 'material_quantity', 'material_type_id');
-            foreach ($blueprint['activities']['manufacturing']['materials'] as $material) {
-                if (!isset($oldMaterialsMap[$material['typeID']]) ||
-                    ($material['quantity'] != $oldMaterialsMap[$material['typeID']])
-                ) {
-                    $attributesBM = [
-                        'blueprint_type_id' => $blueprint['blueprintTypeID'],
-                        'material_type_id' => $material['typeID'],
-                    ];
-                    $valuesBM = [
-                        'blueprint_type_id' => $blueprint['blueprintTypeID'],
-                        'material_type_id' => $material['typeID'],
-                        'material_quantity' => $material['quantity'],
-                    ];
-                    // 写入蓝图材料关系表
-                    BlueprintMaterial::query()->updateOrCreate($attributesBM, $valuesBM);
-                }
-                // TODO 删除不存在的蓝图材料关系
+            // 蓝图生产材料关系
+            foreach ($blueprint['activities']['manufacturing']['materials'] as $materialM) {
+                $attributesM = [
+                    'blueprint_type_id' => $blueprint['blueprintTypeID'],
+                    'material_type_id' => $materialM['typeID'],
+                    'material_quantity' => $materialM['quantity'],
+                    'activity_type' => BlueprintMaterial::ACTIVITY_TYPE_MANUFACTURING,
+                ];
+                // 写入蓝图材料关系表
+                BlueprintMaterial::query()->create($attributesM);
                 // 修改type表price need
-                Type::setPriceNeed($material['typeID']);
+                Type::setPriceNeed($materialM['typeID']);
+            }
+            // 蓝图研发材料关系
+            if (empty($blueprint['activities']['invention'])) continue;
+            if (empty($blueprint['activities']['invention']['materials'])) continue;
+            foreach ($blueprint['activities']['invention']['materials'] as $materialI) {
+                $attributesI = [
+                    'blueprint_type_id' => $blueprint['blueprintTypeID'],
+                    'material_type_id' => $materialI['typeID'],
+                    'material_quantity' => $materialI['quantity'],
+                    'activity_type' => BlueprintMaterial::ACTIVITY_TYPE_INVENTION,
+                ];
+                // 写入蓝图材料关系表
+                BlueprintMaterial::query()->create($attributesI);
             }
         }
+        // 研发图改标记为ForSale
+        Blueprint::query()->whereIn('type_id', $inventionTypeIds)
+            ->update(['for_sale' => Blueprint::FOR_SALE_YES]);
     }
 }
 

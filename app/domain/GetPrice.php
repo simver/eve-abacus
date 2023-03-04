@@ -12,7 +12,7 @@ class GetPrice
     public static function getPriceNeed(): void
     {
         $types = Type::query()
-            ->where('price_need', Type::PRICE_NEED_YES)
+            ->where('published', 1)
             ->get()->toArray();
 
         // 获取ESI价格列表

@@ -13,6 +13,7 @@ class ImportType
     public static function import(string $filepath): void
     {
         $item = yaml_parse_file($filepath);
+        Type::query()->truncate();
         foreach ($item as $typeId => $type) {
             $attributes = ['type_id' => $typeId];
             $values = [

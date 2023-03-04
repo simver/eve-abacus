@@ -52,7 +52,7 @@ class Start extends Command
                     $this->manufacturingMarketList();
                     break;
                 case 5:
-                    if ($this->confirm('会清除历史数据，确定么？', true))
+                    if ($this->confirm('会清除历史数据，确定么？'))
                         $this->updateContracts();
                     break;
                 case 6:
@@ -67,12 +67,12 @@ class Start extends Command
 
     public function importBlueprint()
     {
-        ImportBlueprint::import('/Users/simver/Downloads/sde/fsd/blueprints.yaml');
+        ImportBlueprint::import(storage_path('blueprints.yaml'));
     }
 
     public function importType()
     {
-        ImportType::import('/Users/simver/Downloads/sde/fsd/typeIDs.yaml');
+        ImportType::import(storage_path('typeIDs.yaml'));
     }
 
     public function getTypePrice()

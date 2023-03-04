@@ -28,12 +28,16 @@ CREATE TABLE `blueprint` (
     `product_type_id` int NOT NULL DEFAULT '0' COMMENT '产品id',
     `product_quantity` int NOT NULL DEFAULT '0' COMMENT '产品数量',
     `for_sale` int NOT NULL DEFAULT '0' COMMENT '是否有出售',
+    `invention_type_id` int NOT NULL DEFAULT '0' COMMENT '可研发蓝图ID',
+    `invention_probability` float unsigned NOT NULL DEFAULT '0.00' COMMENT '蓝图研发几率',
+    `invention_quantity` int NOT NULL DEFAULT '0' COMMENT '蓝图研发数量',
     `average_price` float unsigned NOT NULL DEFAULT '0.00' COMMENT '平均价格',
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uni_type_id` (`type_id`),
     KEY `idx_product_type_id` (`product_type_id`),
+    KEY `idx_invention_type_id` (`invention_type_id`),
     KEY `idx_manufacturing_time` (`manufacturing_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='蓝图表';
 
@@ -43,10 +47,11 @@ CREATE TABLE `blueprint_material` (
      `blueprint_type_id` int NOT NULL DEFAULT '0' COMMENT '蓝图ID',
      `material_type_id` int NOT NULL DEFAULT '0' COMMENT '材料id',
      `material_quantity` int NOT NULL DEFAULT '0' COMMENT '材料数量',
+     `activity_type` int NOT NULL DEFAULT '0' COMMENT '材料用途类型',
      `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
      `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
      PRIMARY KEY (`id`),
-     UNIQUE KEY `uni_blueprint_material_type_id` (`blueprint_type_id`, `material_type_id`),
+     UNIQUE KEY `uni_blueprint_material_type_id` (`blueprint_type_id`, `material_type_id`, `activity_type`),
      KEY `idx_blueprint_type_id` (`blueprint_type_id`),
      KEY `idx_material_type_id` (`material_type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='蓝图材料表';
