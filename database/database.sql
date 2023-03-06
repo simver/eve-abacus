@@ -3,6 +3,7 @@ CREATE TABLE `type` (
     `id` int unsigned NOT NULL AUTO_INCREMENT,
     `type_id` int NOT NULL DEFAULT '0' COMMENT '物品ID',
     `group_id` int NOT NULL DEFAULT '0' COMMENT '组ID',
+    `meta_group_id` int NOT NULL DEFAULT '0' COMMENT '元组ID',
     `graphic_id` int NOT NULL DEFAULT '0' COMMENT '图ID',
     `name_zh` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '中文名称',
     `name_en` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '英文名称',
@@ -94,3 +95,16 @@ CREATE TABLE `contract_item_cache` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uni_type_id` (`type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='合同条目缓存表';
+
+DROP TABLE IF EXISTS `meta_group`;
+CREATE TABLE `meta_group` (
+    `id` int unsigned NOT NULL AUTO_INCREMENT,
+    `meta_group_id` int NOT NULL DEFAULT '0' COMMENT '物品ID',
+    `name_zh` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '中文名称',
+    `name_en` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '英文名称',
+    `description` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
+    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uni_meta_group_id` (`meta_group_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='元组数据表';

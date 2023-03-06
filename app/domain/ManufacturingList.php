@@ -2,6 +2,7 @@
 
 namespace App\domain;
 
+use App\Models\MetaGrooup;
 use App\Models\Type;
 use App\Models\Blueprint;
 use App\Models\TypePrice;
@@ -52,6 +53,9 @@ class ManufacturingList
         $rank = [];
         $salesOrderDiscount = 1 - ($this->salesTax + $this->brokerFee);
         $salesImmediateDiscount = 1 - $this->salesTax;
+        // 准备元组信息数据
+        $metas = MetaGrooup::query()->get()->toArray();
+        $metas = array_column($metas, 'name_zh', 'meta_group_id');
         foreach ($blueprints as $blueprint) {
             if (is_object($blueprint)) $blueprint = get_object_vars($blueprint);
             $rankItem = [];
@@ -78,6 +82,12 @@ class ManufacturingList
             if (is_null($productType)) continue;
             $rankItem['product_name_zh'] = $productType->name_zh;
             $rankItem['product_name_en'] = $productType->name_en;
+            // 产品元组信息
+            if (!empty($productType->meta_group_id) && !empty($metas[$productType->meta_group_id])) {
+                $rankItem['product_meta'] = $metas[$productType->meta_group_id];
+            } else {
+                $rankItem['product_meta'] = '';
+            }
             // 查询蓝图产品价格
             $productPrice = TypePrice::query()
                 ->where('type_id', $blueprint['product_type_id'])

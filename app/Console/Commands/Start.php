@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 use App\domain\Contract;
 use App\domain\GetPrice;
 use App\domain\ImportBlueprint;
+use App\domain\ImportMetaGroup;
 use App\domain\ImportType;
 use App\domain\ManufacturingList;
 use Illuminate\Console\Command;
@@ -31,7 +32,7 @@ class Start extends Command
         ini_set('memory_limit', '1024M');
 
         $choices = [[1, '导入 TypeId 数据'], [2, '导入蓝图数据'], [3, '更新价格数据'], [4, '计算生产盈利排行（市场）'],
-            [5, '更新合同数据'], [6, '计算生产盈利排行（合同）'],
+            [5, '更新合同数据'], [6, '计算生产盈利排行（合同）'], [7, '导入元组数据'],
             [0, '退出']];
         $this->table(['选择', '功能'], $choices);
         while ($choice = $this->choice("请选择", array_column($choices, 0))) {
@@ -54,9 +55,14 @@ class Start extends Command
                 case 5:
                     if ($this->confirm('会清除历史数据，确定么？'))
                         $this->updateContracts();
+                    echo "已更新合同数据." . PHP_EOL;
                     break;
                 case 6:
                     $this->manufacturingContractList();
+                    break;
+                case 7:
+                    $this->importMetaGroup();
+                    echo "已导入元组数据." . PHP_EOL;
                     break;
                 default:
                     break;
@@ -84,7 +90,7 @@ class Start extends Command
     {
         $new = new ManufacturingList();
         $manufacturingList = $new->getProfitRank('market');
-        $headers = ['blueprint_type_id' => "蓝图ID", 'manufacturing_time' => '产时', 'product_type_id' => '产品ID', 'blueprint_name_zh' => '蓝图', 'product_name_zh' => '产品', 'product_buy_max' => '买价', 'materials_cost' => '成本', 'profit_for_buyer' => '利润', 'profit_for_buyer_sec' => '秒利润', 'RIO' => 'RIO', 'PPD' => 'PPD'];
+        $headers = ['blueprint_type_id' => "蓝图ID", 'manufacturing_time' => '产时', 'product_type_id' => '产品ID', 'blueprint_name_zh' => '蓝图', 'product_name_zh' => '产品', 'product_meta' => 'Meta', 'product_buy_max' => '买价', 'materials_cost' => '成本', 'profit_for_buyer' => '利润', 'profit_for_buyer_sec' => '秒利润', 'RIO' => 'RIO', 'PPD' => 'PPD'];
         $manufacturingList = array_map(function ($item) use ($headers) {
             return Arr::only($item, array_keys($headers));
         }, $manufacturingList);
@@ -105,5 +111,10 @@ class Start extends Command
     public function updateContracts()
     {
         Contract::updateContracts();
+    }
+
+    public function importMetaGroup()
+    {
+        ImportMetaGroup::import(storage_path('metaGroups.yaml'));
     }
 }

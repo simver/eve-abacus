@@ -19,6 +19,7 @@ class ImportType
             $values = [
                 'type_id' => $typeId,
                 'group_id' => $type['groupID'],
+                'meta_group_id' => $type['metaGroupID'] ?? 0,
                 'graphic_id' => $type['graphicID'] ?? 0,
                 'name_zh' => $type['name']['zh'] ?? '',
                 'name_en' => $type['name']['en'],
