@@ -58,7 +58,9 @@ class Ceve
     {
         $url = self::URL . "market/region/" . $regionId . "/system/" . $systemId . "/type/" . $typeId . ".json";
 
-        return Curl::httpGetRequest($url);
+        $result = Curl::httpGetRequest($url);
+        if (empty($result)) $result = Curl::httpGetRequest($url);
+        return $result;
     }
 
     public static function getJitaPrice(int $typeId): array
@@ -68,6 +70,7 @@ class Ceve
             'systemId' => Universe::JITA,
         ];
         $prices = self::getPriceByTypeId($typeId, $location['regionId'], $location['systemId']);
+        if (empty($prices)) return [];
         return array_merge($location, $prices);
     }
 }

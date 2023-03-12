@@ -31,6 +31,7 @@ class GetPrice
     {
         // 获取吉他价格
         $jitaPrice = Ceve::getJitaPrice($typeId);
+        if (empty($jitaPrice)) return;
         $attributes = [
             'type_id' => $typeId,
             'region_id' => $jitaPrice['regionId'],
