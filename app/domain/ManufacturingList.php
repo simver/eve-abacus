@@ -82,11 +82,19 @@ class ManufacturingList
             if (is_null($productType)) continue;
             $rankItem['product_name_zh'] = $productType->name_zh;
             $rankItem['product_name_en'] = $productType->name_en;
+            // 筛选产品名称
+            if (stripos($rankItem['product_name_zh'], '增效体')) {
+                continue;
+            }
             // 产品元组信息
             if (!empty($productType->meta_group_id) && !empty($metas[$productType->meta_group_id])) {
                 $rankItem['product_meta'] = $metas[$productType->meta_group_id];
             } else {
                 $rankItem['product_meta'] = '';
+            }
+            // 筛选元组信息
+            if (in_array($rankItem['product_meta'], ['限时提供', '势力', '故事线'])) {
+                continue;
             }
             // 查询蓝图产品价格
             $productPrice = TypePrice::query()
